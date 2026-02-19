@@ -1,0 +1,622 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Machine Learning Showcase</title>
+    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg-primary: #0a0e27;
+            --bg-secondary: #151b3d;
+            --text-primary: #e0e6ff;
+            --text-secondary: #8b92b5;
+            --accent-primary: #00f0ff;
+            --accent-secondary: #ff00f7;
+            --accent-tertiary: #00ff88;
+            --card-bg: rgba(21, 27, 61, 0.6);
+            --card-border: rgba(0, 240, 255, 0.3);
+        }
+
+        [data-theme="light"] {
+            --bg-primary: #f5f7ff;
+            --bg-secondary: #e8ecff;
+            --text-primary: #1a1f3a;
+            --text-secondary: #4a5578;
+            --accent-primary: #0088ff;
+            --accent-secondary: #ff0099;
+            --accent-tertiary: #00cc66;
+            --card-bg: rgba(255, 255, 255, 0.8);
+            --card-border: rgba(0, 136, 255, 0.3);
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Space Mono', monospace;
+            background: var(--bg-primary);
+            color: var(--text-primary);
+            overflow-x: hidden;
+            position: relative;
+            transition: background 0.5s ease, color 0.5s ease;
+        }
+
+        /* Animated Background */
+        .animated-bg {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: -1;
+            opacity: 0.4;
+        }
+
+        .gradient-orb {
+            position: absolute;
+            border-radius: 50%;
+            filter: blur(80px);
+            animation: float 20s infinite ease-in-out;
+        }
+
+        .orb-1 {
+            width: 500px;
+            height: 500px;
+            background: radial-gradient(circle, var(--accent-primary), transparent);
+            top: -10%;
+            left: -10%;
+            animation-delay: 0s;
+        }
+
+        .orb-2 {
+            width: 600px;
+            height: 600px;
+            background: radial-gradient(circle, var(--accent-secondary), transparent);
+            bottom: -15%;
+            right: -15%;
+            animation-delay: 5s;
+        }
+
+        .orb-3 {
+            width: 400px;
+            height: 400px;
+            background: radial-gradient(circle, var(--accent-tertiary), transparent);
+            top: 40%;
+            left: 60%;
+            animation-delay: 10s;
+        }
+
+        @keyframes float {
+            0%, 100% {
+                transform: translate(0, 0) scale(1);
+            }
+            33% {
+                transform: translate(100px, -100px) scale(1.1);
+            }
+            66% {
+                transform: translate(-50px, 100px) scale(0.9);
+            }
+        }
+
+        /* Header */
+        header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 2rem 5%;
+            position: sticky;
+            top: 0;
+            background: rgba(10, 14, 39, 0.8);
+            backdrop-filter: blur(10px);
+            z-index: 100;
+            border-bottom: 1px solid var(--card-border);
+            animation: slideDown 0.8s ease;
+        }
+
+        [data-theme="light"] header {
+            background: rgba(245, 247, 255, 0.8);
+        }
+
+        @keyframes slideDown {
+            from {
+                transform: translateY(-100%);
+                opacity: 0;
+            }
+            to {
+                transform: translateY(0);
+                opacity: 1;
+            }
+        }
+
+        .logo {
+            font-family: 'Orbitron', sans-serif;
+            font-size: 2rem;
+            font-weight: 900;
+            background: linear-gradient(135deg, var(--accent-primary), var(--accent-secondary));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            letter-spacing: 2px;
+            cursor: pointer;
+            transition: transform 0.3s ease;
+        }
+
+        .logo:hover {
+            transform: scale(1.05);
+        }
+
+        /* Theme Toggle */
+        .theme-toggle {
+            width: 60px;
+            height: 30px;
+            background: var(--card-bg);
+            border: 2px solid var(--card-border);
+            border-radius: 30px;
+            position: relative;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .theme-toggle:hover {
+            border-color: var(--accent-primary);
+            box-shadow: 0 0 20px rgba(0, 240, 255, 0.3);
+        }
+
+        .theme-toggle-ball {
+            width: 22px;
+            height: 22px;
+            background: linear-gradient(135deg, var(--accent-primary), var(--accent-secondary));
+            border-radius: 50%;
+            position: absolute;
+            top: 2px;
+            left: 2px;
+            transition: transform 0.3s ease;
+            box-shadow: 0 0 10px rgba(0, 240, 255, 0.5);
+        }
+
+        [data-theme="light"] .theme-toggle-ball {
+            transform: translateX(30px);
+        }
+
+        /* Hero Section */
+        .hero {
+            text-align: center;
+            padding: 8rem 5% 5rem;
+            animation: fadeInUp 1s ease;
+        }
+
+        @keyframes fadeInUp {
+            from {
+                opacity: 0;
+                transform: translateY(30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .hero h1 {
+            font-family: 'Orbitron', sans-serif;
+            font-size: 4.5rem;
+            font-weight: 900;
+            margin-bottom: 1.5rem;
+            background: linear-gradient(135deg, var(--accent-primary), var(--accent-secondary), var(--accent-tertiary));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            animation: glow 3s ease-in-out infinite;
+        }
+
+        @keyframes glow {
+            0%, 100% {
+                filter: drop-shadow(0 0 20px rgba(0, 240, 255, 0.5));
+            }
+            50% {
+                filter: drop-shadow(0 0 40px rgba(255, 0, 247, 0.5));
+            }
+        }
+
+        .hero p {
+            font-size: 1.3rem;
+            color: var(--text-secondary);
+            max-width: 800px;
+            margin: 0 auto 3rem;
+            line-height: 1.8;
+        }
+
+        /* ML Sections Container */
+        .ml-sections {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 0 5% 5rem;
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+            gap: 2.5rem;
+        }
+
+        /* ML Card */
+        .ml-card {
+            background: var(--card-bg);
+            border: 2px solid var(--card-border);
+            border-radius: 20px;
+            padding: 2.5rem;
+            position: relative;
+            overflow: hidden;
+            transition: all 0.4s ease;
+            cursor: pointer;
+            opacity: 0;
+            transform: translateY(50px);
+            animation: fadeInCard 0.8s ease forwards;
+            backdrop-filter: blur(10px);
+        }
+
+        .ml-card:nth-child(1) { animation-delay: 0.1s; }
+        .ml-card:nth-child(2) { animation-delay: 0.2s; }
+        .ml-card:nth-child(3) { animation-delay: 0.3s; }
+        .ml-card:nth-child(4) { animation-delay: 0.4s; }
+        .ml-card:nth-child(5) { animation-delay: 0.5s; }
+
+        @keyframes fadeInCard {
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .ml-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(0, 240, 255, 0.1), transparent);
+            transition: left 0.6s ease;
+        }
+
+        .ml-card:hover::before {
+            left: 100%;
+        }
+
+        .ml-card:hover {
+            transform: translateY(-10px);
+            border-color: var(--accent-primary);
+            box-shadow: 0 20px 60px rgba(0, 240, 255, 0.3);
+        }
+
+        .ml-card-icon {
+            width: 80px;
+            height: 80px;
+            background: linear-gradient(135deg, var(--accent-primary), var(--accent-secondary));
+            border-radius: 20px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 2.5rem;
+            margin-bottom: 1.5rem;
+            position: relative;
+            animation: pulse 2s ease-in-out infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% {
+                box-shadow: 0 0 20px rgba(0, 240, 255, 0.4);
+            }
+            50% {
+                box-shadow: 0 0 40px rgba(255, 0, 247, 0.6);
+            }
+        }
+
+        .ml-card h2 {
+            font-family: 'Orbitron', sans-serif;
+            font-size: 1.8rem;
+            margin-bottom: 1rem;
+            color: var(--text-primary);
+        }
+
+        .ml-card p {
+            color: var(--text-secondary);
+            line-height: 1.7;
+            margin-bottom: 1.5rem;
+        }
+
+        .ml-card-features {
+            list-style: none;
+            padding: 0;
+        }
+
+        .ml-card-features li {
+            padding: 0.6rem 0;
+            color: var(--text-secondary);
+            position: relative;
+            padding-left: 1.5rem;
+        }
+
+        .ml-card-features li::before {
+            content: '▹';
+            position: absolute;
+            left: 0;
+            color: var(--accent-tertiary);
+            font-size: 1.2rem;
+        }
+
+        /* Footer */
+        footer {
+            text-align: center;
+            padding: 3rem 5%;
+            background: var(--bg-secondary);
+            border-top: 1px solid var(--card-border);
+            margin-top: 5rem;
+        }
+
+        footer p {
+            color: var(--text-secondary);
+            font-size: 0.95rem;
+        }
+
+        /* Sound Indicator */
+        .sound-indicator {
+            position: fixed;
+            bottom: 30px;
+            right: 30px;
+            width: 50px;
+            height: 50px;
+            background: var(--card-bg);
+            border: 2px solid var(--card-border);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            font-size: 1.5rem;
+            z-index: 1000;
+            transition: all 0.3s ease;
+            backdrop-filter: blur(10px);
+        }
+
+        .sound-indicator:hover {
+            transform: scale(1.1);
+            border-color: var(--accent-primary);
+            box-shadow: 0 0 20px rgba(0, 240, 255, 0.5);
+        }
+
+        .sound-indicator.muted {
+            opacity: 0.5;
+        }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            .hero h1 {
+                font-size: 2.5rem;
+            }
+
+            .hero p {
+                font-size: 1rem;
+            }
+
+            .ml-sections {
+                grid-template-columns: 1fr;
+            }
+
+            header {
+                padding: 1.5rem 5%;
+            }
+
+            .logo {
+                font-size: 1.5rem;
+            }
+        }
+    </style>
+</head>
+<body data-theme="dark">
+    <!-- Animated Background -->
+    <div class="animated-bg">
+        <div class="gradient-orb orb-1"></div>
+        <div class="gradient-orb orb-2"></div>
+        <div class="gradient-orb orb-3"></div>
+    </div>
+
+    <!-- Header -->
+    <header>
+        <div class="logo" id="logo">ML_NEXUS</div>
+        <div class="theme-toggle" id="themeToggle">
+            <div class="theme-toggle-ball"></div>
+        </div>
+    </header>
+
+    <!-- Hero Section -->
+    <section class="hero">
+        <h1>Machine Learning Frameworks</h1>
+        <p>Explore cutting-edge machine learning technologies powering the future of AI. From deep neural networks to ensemble methods, discover the tools that transform data into intelligence.</p>
+    </section>
+
+    <!-- ML Framework Sections -->
+    <div class="ml-sections">
+        <!-- TensorFlow -->
+        <div class="ml-card" data-sound="card">
+            <div class="ml-card-icon">🧠</div>
+            <h2>TensorFlow</h2>
+            <p>Google's open-source machine learning framework for building and training neural networks at scale.</p>
+            <ul class="ml-card-features">
+                <li>End-to-end ML platform</li>
+                <li>Production-ready deployment</li>
+                <li>Keras API integration</li>
+                <li>Mobile & edge optimization</li>
+            </ul>
+        </div>
+
+        <!-- Scikit-learn -->
+        <div class="ml-card" data-sound="card">
+            <div class="ml-card-icon">📊</div>
+            <h2>Scikit-Learn</h2>
+            <p>Python's premier library for classical machine learning algorithms and data preprocessing.</p>
+            <ul class="ml-card-features">
+                <li>Classification & regression</li>
+                <li>Clustering algorithms</li>
+                <li>Feature engineering tools</li>
+                <li>Model evaluation metrics</li>
+            </ul>
+        </div>
+
+        <!-- Random Forest -->
+        <div class="ml-card" data-sound="card">
+            <div class="ml-card-icon">🌲</div>
+            <h2>Random Forest</h2>
+            <p>Ensemble learning method that constructs multiple decision trees for robust predictions.</p>
+            <ul class="ml-card-features">
+                <li>High accuracy on complex data</li>
+                <li>Handles missing values</li>
+                <li>Feature importance ranking</li>
+                <li>Resistant to overfitting</li>
+            </ul>
+        </div>
+
+        <!-- Neural Networks -->
+        <div class="ml-card" data-sound="card">
+            <div class="ml-card-icon">⚡</div>
+            <h2>Neural Networks</h2>
+            <p>Powerful computational models inspired by biological neural systems for deep learning tasks.</p>
+            <ul class="ml-card-features">
+                <li>Pattern recognition mastery</li>
+                <li>Image & speech processing</li>
+                <li>Transfer learning support</li>
+                <li>Backpropagation training</li>
+            </ul>
+        </div>
+
+        <!-- XGBoost -->
+        <div class="ml-card" data-sound="card">
+            <div class="ml-card-icon">🚀</div>
+            <h2>XGBoost</h2>
+            <p>Extreme Gradient Boosting algorithm dominating machine learning competitions worldwide.</p>
+            <ul class="ml-card-features">
+                <li>Industry-leading performance</li>
+                <li>Built-in regularization</li>
+                <li>Parallel tree boosting</li>
+                <li>Handles sparse data</li>
+            </ul>
+        </div>
+    </div>
+
+    <!-- Footer -->
+    <footer>
+        <p>&copy; 2024 ML Nexus. Advancing the frontier of artificial intelligence.</p>
+    </footer>
+
+    <!-- Sound Indicator -->
+    <div class="sound-indicator" id="soundToggle">🔊</div>
+
+    <script>
+        // Sound effects (using Web Audio API)
+        let audioContext;
+        let soundEnabled = true;
+
+        function initAudio() {
+            audioContext = new (window.AudioContext || window.webkitAudioContext)();
+        }
+
+        function playSound(type) {
+            if (!soundEnabled || !audioContext) return;
+
+            const oscillator = audioContext.createOscillator();
+            const gainNode = audioContext.createGain();
+
+            oscillator.connect(gainNode);
+            gainNode.connect(audioContext.destination);
+
+            switch(type) {
+                case 'click':
+                    oscillator.frequency.value = 800;
+                    gainNode.gain.setValueAtTime(0.3, audioContext.currentTime);
+                    gainNode.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + 0.1);
+                    oscillator.start(audioContext.currentTime);
+                    oscillator.stop(audioContext.currentTime + 0.1);
+                    break;
+                case 'hover':
+                    oscillator.frequency.value = 600;
+                    gainNode.gain.setValueAtTime(0.1, audioContext.currentTime);
+                    gainNode.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + 0.05);
+                    oscillator.start(audioContext.currentTime);
+                    oscillator.stop(audioContext.currentTime + 0.05);
+                    break;
+                case 'toggle':
+                    oscillator.frequency.value = 1000;
+                    gainNode.gain.setValueAtTime(0.2, audioContext.currentTime);
+                    gainNode.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + 0.15);
+                    oscillator.start(audioContext.currentTime);
+                    oscillator.stop(audioContext.currentTime + 0.15);
+                    break;
+            }
+        }
+
+        // Theme Toggle
+        const themeToggle = document.getElementById('themeToggle');
+        const body = document.body;
+
+        themeToggle.addEventListener('click', () => {
+            if (!audioContext) initAudio();
+            
+            const currentTheme = body.getAttribute('data-theme');
+            const newTheme = currentTheme === 'dark' ? 'light' : 'dark';
+            body.setAttribute('data-theme', newTheme);
+            playSound('toggle');
+        });
+
+        // Logo Click Sound
+        const logo = document.getElementById('logo');
+        logo.addEventListener('click', () => {
+            if (!audioContext) initAudio();
+            playSound('click');
+        });
+
+        // Card Hover Sounds
+        const mlCards = document.querySelectorAll('.ml-card');
+        mlCards.forEach(card => {
+            card.addEventListener('mouseenter', () => {
+                if (!audioContext) initAudio();
+                playSound('hover');
+            });
+            
+            card.addEventListener('click', () => {
+                playSound('click');
+            });
+        });
+
+        // Sound Toggle
+        const soundToggle = document.getElementById('soundToggle');
+        soundToggle.addEventListener('click', () => {
+            soundEnabled = !soundEnabled;
+            soundToggle.classList.toggle('muted');
+            soundToggle.textContent = soundEnabled ? '🔊' : '🔇';
+            
+            if (soundEnabled && !audioContext) {
+                initAudio();
+            }
+        });
+
+        // Smooth scroll animation observer
+        const observerOptions = {
+            threshold: 0.1,
+            rootMargin: '0px 0px -50px 0px'
+        };
+
+        const observer = new IntersectionObserver((entries) => {
+            entries.forEach(entry => {
+                if (entry.isIntersecting) {
+                    entry.target.style.opacity = '1';
+                    entry.target.style.transform = 'translateY(0)';
+                }
+            });
+        }, observerOptions);
+
+        mlCards.forEach(card => {
+            observer.observe(card);
+        });
+    </script>
+</body>
+</html>
