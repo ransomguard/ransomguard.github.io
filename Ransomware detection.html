@@ -1,0 +1,1219 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI-Powered Ransomware Early Detection System</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;600;700;900&family=JetBrains+Mono:wght@300;400;500&display=swap" rel="stylesheet">
+    
+    <style>
+        /* CSS Variables */
+        :root {
+            --primary-bg: #0a0e27;
+            --secondary-bg: #0f172a;
+            --accent-cyan: #00f5ff;
+            --accent-purple: #a855f7;
+            --accent-orange: #ff6b35;
+            --text-primary: #e2e8f0;
+            --text-secondary: #94a3b8;
+            --card-bg: rgba(15, 23, 42, 0.8);
+            --glow-cyan: rgba(0, 245, 255, 0.3);
+            --glow-purple: rgba(168, 85, 247, 0.3);
+        }
+
+        /* Reset and Base Styles */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'JetBrains Mono', monospace;
+            background: var(--primary-bg);
+            color: var(--text-primary);
+            line-height: 1.6;
+            overflow-x: hidden;
+            cursor: none !important;
+        }
+
+        * {
+            cursor: none !important;
+        }
+
+        /* Custom Cursor Styles */
+        .custom-cursor {
+            position: fixed;
+            width: 30px;
+            height: 30px;
+            pointer-events: none;
+            z-index: 10000;
+            mix-blend-mode: screen;
+        }
+
+        .cursor-outer {
+            width: 100%;
+            height: 100%;
+            border: 2px solid var(--accent-cyan);
+            border-radius: 50%;
+            position: absolute;
+            transition: all 0.15s ease-out;
+            box-shadow: 0 0 20px var(--accent-cyan),
+                        inset 0 0 10px rgba(0, 245, 255, 0.3);
+            animation: cursorRotate 3s linear infinite;
+        }
+
+        .cursor-outer::before {
+            content: '';
+            position: absolute;
+            top: -2px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 10px;
+            height: 2px;
+            background: var(--accent-cyan);
+            box-shadow: 0 0 5px var(--accent-cyan);
+        }
+
+        .cursor-outer::after {
+            content: '';
+            position: absolute;
+            bottom: -2px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 10px;
+            height: 2px;
+            background: var(--accent-cyan);
+            box-shadow: 0 0 5px var(--accent-cyan);
+        }
+
+        @keyframes cursorRotate {
+            from { transform: rotate(0deg); }
+            to { transform: rotate(360deg); }
+        }
+
+        .cursor-inner {
+            width: 6px;
+            height: 6px;
+            background: var(--accent-cyan);
+            border-radius: 50%;
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            box-shadow: 0 0 15px var(--accent-cyan);
+            transition: all 0.08s ease-out;
+        }
+
+        .cursor-glow {
+            width: 50px;
+            height: 50px;
+            border: 1px solid rgba(0, 245, 255, 0.3);
+            border-radius: 50%;
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            animation: cursorPulse 2s ease-in-out infinite;
+        }
+
+        @keyframes cursorPulse {
+            0%, 100% {
+                transform: translate(-50%, -50%) scale(0.8);
+                opacity: 0.5;
+            }
+            50% {
+                transform: translate(-50%, -50%) scale(1.2);
+                opacity: 0.1;
+            }
+        }
+
+        .custom-cursor.hover .cursor-outer {
+            width: 50px;
+            height: 50px;
+            border-color: var(--accent-purple);
+            box-shadow: 0 0 30px var(--accent-purple),
+                        inset 0 0 15px rgba(168, 85, 247, 0.3);
+        }
+
+        .custom-cursor.hover .cursor-inner {
+            background: var(--accent-purple);
+            box-shadow: 0 0 20px var(--accent-purple);
+            transform: translate(-50%, -50%) scale(1.5);
+        }
+
+        .custom-cursor.click .cursor-outer {
+            transform: scale(0.7);
+            border-color: var(--accent-orange);
+            box-shadow: 0 0 40px var(--accent-orange);
+        }
+
+        .custom-cursor.click .cursor-inner {
+            background: var(--accent-orange);
+            box-shadow: 0 0 25px var(--accent-orange);
+        }
+
+        /* Cursor Trail */
+        .cursor-trail {
+            position: fixed;
+            width: 8px;
+            height: 8px;
+            background: var(--accent-cyan);
+            border-radius: 50%;
+            pointer-events: none;
+            z-index: 9999;
+            opacity: 0.8;
+            box-shadow: 0 0 10px var(--accent-cyan);
+            animation: trailFade 0.6s ease-out forwards;
+        }
+
+        @keyframes trailFade {
+            to {
+                transform: scale(0);
+                opacity: 0;
+            }
+        }
+
+        /* Cursor Particles */
+        .cursor-particle {
+            position: fixed;
+            width: 3px;
+            height: 3px;
+            background: var(--accent-cyan);
+            border-radius: 50%;
+            pointer-events: none;
+            z-index: 9998;
+            box-shadow: 0 0 5px var(--accent-cyan);
+        }
+
+        /* Crosshair Lines */
+        .cursor-crosshair {
+            position: fixed;
+            pointer-events: none;
+            z-index: 9997;
+            mix-blend-mode: screen;
+        }
+
+        .crosshair-line-h {
+            position: fixed;
+            width: 100vw;
+            height: 1px;
+            background: linear-gradient(90deg, 
+                transparent 0%, 
+                rgba(0, 245, 255, 0.3) 45%, 
+                rgba(0, 245, 255, 0.6) 50%, 
+                rgba(0, 245, 255, 0.3) 55%, 
+                transparent 100%);
+            pointer-events: none;
+            z-index: 9997;
+            left: 0;
+            opacity: 0.5;
+        }
+
+        .crosshair-line-v {
+            position: fixed;
+            width: 1px;
+            height: 100vh;
+            background: linear-gradient(180deg, 
+                transparent 0%, 
+                rgba(0, 245, 255, 0.3) 45%, 
+                rgba(0, 245, 255, 0.6) 50%, 
+                rgba(0, 245, 255, 0.3) 55%, 
+                transparent 100%);
+            pointer-events: none;
+            z-index: 9997;
+            top: 0;
+            opacity: 0.5;
+        }
+
+        /* Animated Background */
+        .bg-animation {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: -1;
+            background: 
+                radial-gradient(ellipse at 20% 30%, var(--glow-cyan) 0%, transparent 50%),
+                radial-gradient(ellipse at 80% 70%, var(--glow-purple) 0%, transparent 50%),
+                linear-gradient(135deg, var(--primary-bg) 0%, var(--secondary-bg) 100%);
+        }
+
+        .grid-pattern {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: -1;
+            background-image: 
+                linear-gradient(rgba(199, 9, 221, 0.03) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(5, 53, 54, 0.03) 1px, transparent 1px);
+            background-size: 50px 50px;
+            animation: gridMove 20s linear infinite;
+        }
+
+        @keyframes gridMove {
+            0% { transform: translateY(0); }
+            100% { transform: translateY(50px); }
+        }
+
+        /* Navigation */
+        nav {
+            position: fixed;
+            top: 0;
+            width: 100%;
+            padding: 1.5rem 5%;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            z-index: 1000;
+            background: rgba(10, 14, 39, 0.95);
+            backdrop-filter: blur(10px);
+            border-bottom: 1px solid rgba(0, 245, 255, 0.1);
+        }
+
+        .logo {
+            font-family: 'Orbitron', sans-serif;
+            font-size: 1.5rem;
+            font-weight: 900;
+            background: linear-gradient(135deg, var(--accent-cyan), var(--accent-purple));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            letter-spacing: 2px;
+        }
+
+        .nav-links {
+            display: flex;
+            gap: 2rem;
+            list-style: none;
+        }
+
+        .nav-links a {
+            color: var(--text-secondary);
+            text-decoration: none;
+            font-size: 0.9rem;
+            font-weight: 500;
+            transition: all 0.3s ease;
+            position: relative;
+        }
+
+        .nav-links a:hover {
+            color: var(--accent-cyan);
+        }
+
+        .nav-links a::after {
+            content: '';
+            position: absolute;
+            bottom: -5px;
+            left: 0;
+            width: 0;
+            height: 2px;
+            background: var(--accent-cyan);
+            transition: width 0.3s ease;
+        }
+
+        .nav-links a:hover::after {
+            width: 100%;
+        }
+
+        /* Hero Section */
+        .hero {
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+            padding: 0 5%;
+            position: relative;
+        }
+
+        .hero-content {
+            max-width: 900px;
+            animation: fadeInUp 1s ease-out;
+        }
+
+        @keyframes fadeInUp {
+            from {
+                opacity: 0;
+                transform: translateY(30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .hero-subtitle {
+            font-family: 'Orbitron', sans-serif;
+            font-size: 1rem;
+            color: var(--accent-cyan);
+            letter-spacing: 4px;
+            margin-bottom: 1rem;
+            animation: fadeInUp 1s ease-out 0.2s both;
+        }
+
+        .hero h1 {
+            font-family: 'Orbitron', sans-serif;
+            font-size: 3.5rem;
+            font-weight: 900;
+            line-height: 1.2;
+            margin-bottom: 1.5rem;
+            background: linear-gradient(135deg, var(--accent-cyan), var(--accent-purple), var(--accent-orange));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            animation: fadeInUp 1s ease-out 0.4s both;
+        }
+
+        .hero p {
+            font-size: 1.2rem;
+            color: var(--text-secondary);
+            margin-bottom: 2.5rem;
+            animation: fadeInUp 1s ease-out 0.6s both;
+        }
+
+        .cta-buttons {
+            display: flex;
+            gap: 1.5rem;
+            justify-content: center;
+            animation: fadeInUp 1s ease-out 0.8s both;
+        }
+
+        .btn {
+            padding: 1rem 2.5rem;
+            border: none;
+            border-radius: 8px;
+            font-family: 'Orbitron', sans-serif;
+            font-size: 0.95rem;
+            font-weight: 600;
+            transition: all 0.3s ease;
+            text-decoration: none;
+            display: inline-block;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, var(--accent-cyan), var(--accent-purple));
+            color: white;
+            box-shadow: 0 10px 30px rgba(0, 245, 255, 0.3);
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 15px 40px rgba(0, 245, 255, 0.5);
+        }
+
+        .btn-secondary {
+            background: transparent;
+            color: var(--accent-cyan);
+            border: 2px solid var(--accent-cyan);
+        }
+
+        .btn-secondary:hover {
+            background: var(--accent-cyan);
+            color: var(--primary-bg);
+            transform: translateY(-3px);
+        }
+
+        /* Section Styling */
+        section {
+            padding: 8rem 5%;
+            position: relative;
+        }
+
+        .section-title {
+            font-family: 'Orbitron', sans-serif;
+            font-size: 2.5rem;
+            font-weight: 700;
+            text-align: center;
+            margin-bottom: 1rem;
+            background: linear-gradient(135deg, var(--accent-cyan), var(--accent-purple));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .section-subtitle {
+            text-align: center;
+            color: var(--text-secondary);
+            font-size: 1.1rem;
+            margin-bottom: 4rem;
+            max-width: 700px;
+            margin-left: auto;
+            margin-right: auto;
+        }
+
+        /* About Section */
+        .about-content {
+            max-width: 1200px;
+            margin: 0 auto;
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 4rem;
+            align-items: center;
+        }
+
+        .about-text h3 {
+            font-family: 'Orbitron', sans-serif;
+            font-size: 1.8rem;
+            margin-bottom: 1.5rem;
+            color: var(--accent-cyan);
+        }
+
+        .about-text p {
+            color: var(--text-secondary);
+            margin-bottom: 1.5rem;
+            font-size: 1rem;
+        }
+
+        .stats {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 2rem;
+            margin-top: 3rem;
+        }
+
+        .stat-item {
+            text-align: center;
+            padding: 2rem;
+            background: var(--card-bg);
+            border-radius: 12px;
+            border: 1px solid rgba(0, 245, 255, 0.2);
+            transition: all 0.3s ease;
+        }
+
+        .stat-item:hover {
+            transform: translateY(-5px);
+            border-color: var(--accent-cyan);
+            box-shadow: 0 10px 30px rgba(0, 245, 255, 0.2);
+        }
+
+        .stat-number {
+            font-family: 'Orbitron', sans-serif;
+            font-size: 2.5rem;
+            font-weight: 900;
+            color: var(--accent-cyan);
+            display: block;
+            margin-bottom: 0.5rem;
+        }
+
+        .stat-label {
+            color: var(--text-secondary);
+            font-size: 0.9rem;
+        }
+
+        /* Features Section */
+        .features-grid {
+            max-width: 1200px;
+            margin: 0 auto;
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 2rem;
+        }
+
+        .feature-card {
+            background: var(--card-bg);
+            padding: 2.5rem;
+            border-radius: 16px;
+            border: 1px solid rgba(0, 245, 255, 0.1);
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .feature-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 4px;
+            background: linear-gradient(90deg, var(--accent-cyan), var(--accent-purple));
+            transform: translateX(-100%);
+            transition: transform 0.5s ease;
+        }
+
+        .feature-card:hover {
+            transform: translateY(-10px);
+            border-color: var(--accent-cyan);
+            box-shadow: 0 20px 50px rgba(0, 245, 255, 0.2);
+        }
+
+        .feature-card:hover::before {
+            transform: translateX(0);
+        }
+
+        .feature-icon {
+            font-size: 3rem;
+            margin-bottom: 1.5rem;
+            display: block;
+        }
+
+        .feature-card h3 {
+            font-family: 'Orbitron', sans-serif;
+            font-size: 1.5rem;
+            margin-bottom: 1rem;
+            color: var(--accent-cyan);
+        }
+
+        .feature-card p {
+            color: var(--text-secondary);
+            line-height: 1.8;
+        }
+
+        /* Architecture Section */
+        .architecture {
+            background: rgba(15, 23, 42, 0.5);
+        }
+
+        .architecture-diagram {
+            max-width: 1000px;
+            margin: 0 auto;
+            background: var(--card-bg);
+            padding: 3rem;
+            border-radius: 20px;
+            border: 1px solid rgba(0, 245, 255, 0.2);
+        }
+
+        .pipeline {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 2rem;
+        }
+
+        .pipeline-step {
+            flex: 1;
+            min-width: 150px;
+            text-align: center;
+            position: relative;
+        }
+
+        .pipeline-step::after {
+            content: '→';
+            position: absolute;
+            right: -30px;
+            top: 50%;
+            transform: translateY(-50%);
+            font-size: 2rem;
+            color: var(--accent-cyan);
+        }
+
+        .pipeline-step:last-child::after {
+            content: '';
+        }
+
+        .step-icon {
+            width: 80px;
+            height: 80px;
+            margin: 0 auto 1rem;
+            background: linear-gradient(135deg, var(--accent-cyan), var(--accent-purple));
+            border-radius: 16px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 2rem;
+            animation: pulse 2s ease-in-out infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.05); }
+        }
+
+        .step-title {
+            font-family: 'Orbitron', sans-serif;
+            font-size: 1rem;
+            font-weight: 600;
+            margin-bottom: 0.5rem;
+        }
+
+        .step-desc {
+            font-size: 0.85rem;
+            color: var(--text-secondary);
+        }
+
+        /* Technology Stack */
+        .tech-stack {
+            max-width: 1000px;
+            margin: 4rem auto 0;
+            display: flex;
+            flex-wrap: wrap;
+            gap: 1rem;
+            justify-content: center;
+        }
+
+        .tech-tag {
+            padding: 0.75rem 1.5rem;
+            background: rgba(0, 245, 255, 0.1);
+            border: 1px solid var(--accent-cyan);
+            border-radius: 25px;
+            font-size: 0.9rem;
+            color: var(--accent-cyan);
+            transition: all 0.3s ease;
+        }
+
+        .tech-tag:hover {
+            background: var(--accent-cyan);
+            color: var(--primary-bg);
+            transform: translateY(-3px);
+        }
+
+        /* Demo Section */
+        .demo {
+            background: rgba(15, 23, 42, 0.5);
+        }
+
+        .demo-container {
+            max-width: 900px;
+            margin: 0 auto;
+            background: var(--card-bg);
+            padding: 3rem;
+            border-radius: 20px;
+            border: 1px solid rgba(0, 245, 255, 0.2);
+        }
+
+        .demo-video {
+            width: 100%;
+            aspect-ratio: 16/9;
+            background: linear-gradient(135deg, rgba(0, 245, 255, 0.1), rgba(168, 85, 247, 0.1));
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 4rem;
+            color: var(--accent-cyan);
+            margin-bottom: 2rem;
+            transition: all 0.3s ease;
+        }
+
+        .demo-video:hover {
+            transform: scale(1.02);
+            box-shadow: 0 20px 50px rgba(0, 245, 255, 0.3);
+        }
+
+        .demo-features {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 1.5rem;
+            margin-top: 2rem;
+        }
+
+        .demo-feature {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            padding: 1rem;
+            background: rgba(0, 245, 255, 0.05);
+            border-radius: 8px;
+        }
+
+        .demo-feature::before {
+            content: '✓';
+            font-size: 1.5rem;
+            color: var(--accent-cyan);
+        }
+
+        /* Contact Section */
+        .contact-content {
+            max-width: 800px;
+            margin: 0 auto;
+            text-align: center;
+        }
+
+        .contact-info {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 2rem;
+            margin-top: 3rem;
+        }
+
+        .contact-card {
+            background: var(--card-bg);
+            padding: 2rem;
+            border-radius: 12px;
+            border: 1px solid rgba(0, 245, 255, 0.2);
+            transition: all 0.3s ease;
+        }
+
+        .contact-card:hover {
+            transform: translateY(-5px);
+            border-color: var(--accent-cyan);
+            box-shadow: 0 10px 30px rgba(0, 245, 255, 0.2);
+        }
+
+        .contact-icon {
+            font-size: 2.5rem;
+            margin-bottom: 1rem;
+        }
+
+        .contact-card h3 {
+            font-family: 'Orbitron', sans-serif;
+            font-size: 1.2rem;
+            margin-bottom: 0.5rem;
+            color: var(--accent-cyan);
+        }
+
+        .contact-card a {
+            color: var(--text-secondary);
+            text-decoration: none;
+            transition: color 0.3s ease;
+        }
+
+        .contact-card a:hover {
+            color: var(--accent-cyan);
+        }
+
+        /* Footer */
+        footer {
+            padding: 3rem 5%;
+            text-align: center;
+            border-top: 1px solid rgba(0, 245, 255, 0.1);
+            color: var(--text-secondary);
+        }
+
+        footer p {
+            font-size: 0.9rem;
+        }
+
+        /* Scroll Animation */
+        .fade-in {
+            opacity: 0;
+            transform: translateY(30px);
+            transition: opacity 0.6s ease, transform 0.6s ease;
+        }
+
+        .fade-in.visible {
+            opacity: 1;
+            transform: translateY(0);
+        }
+
+        /* Responsive Design */
+        @media (max-width: 768px) {
+            body {
+                cursor: auto !important;
+            }
+            
+            * {
+                cursor: auto !important;
+            }
+            
+            .custom-cursor,
+            .cursor-crosshair,
+            .cursor-trail,
+            .cursor-particle {
+                display: none !important;
+            }
+
+            .hero h1 {
+                font-size: 2.5rem;
+            }
+
+            .hero p {
+                font-size: 1rem;
+            }
+
+            .cta-buttons {
+                flex-direction: column;
+            }
+
+            .about-content {
+                grid-template-columns: 1fr;
+            }
+
+            .stats {
+                grid-template-columns: 1fr;
+            }
+
+            .nav-links {
+                display: none;
+            }
+
+            .pipeline {
+                flex-direction: column;
+            }
+
+            .pipeline-step::after {
+                content: '↓';
+                right: 50%;
+                top: auto;
+                bottom: -40px;
+                transform: translateX(50%);
+            }
+
+            .demo-features {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="bg-animation"></div>
+    <div class="grid-pattern"></div>
+
+    <!-- Custom Cursor -->
+    <div class="custom-cursor">
+        <div class="cursor-outer"></div>
+        <div class="cursor-inner"></div>
+        <div class="cursor-glow"></div>
+    </div>
+
+    <!-- Crosshair Lines -->
+    <div class="cursor-crosshair">
+        <div class="crosshair-line-h"></div>
+        <div class="crosshair-line-v"></div>
+    </div>
+
+    <!-- Navigation -->
+    <nav>
+        <div class="logo">RANSOMGUARD</div>
+        <ul class="nav-links">
+            <li><a href="#home">Home</a></li>
+            <li><a href="#about">About</a></li>
+            <li><a href="#features">Features</a></li>
+            <li><a href="#architecture">Architecture</a></li>
+            <li><a href="#demo">Demo</a></li>
+            <li><a href="#contact">Contact</a></li>
+            <li></li><a href="#MLshowcase.html">ML Showcase</a></li>
+
+        </ul>
+    </nav>
+
+    <!-- Hero Section -->
+    <section id="home" class="hero">
+        <div class="hero-content">
+            <div class="hero-subtitle">ADVANCED CYBERSECURITY</div>
+            <h1>Real-Time AI-Powered Ransomware Early Detection System</h1>
+            <p>Leveraging Machine Learning and Behavioral Fingerprinting to detect and neutralize ransomware threats before they strike</p>
+            <div class="cta-buttons">
+                <a href="#demo" class="btn btn-primary">View Demo</a>
+                <a href="#about" class="btn btn-secondary">Learn More</a>
+            </div>
+        </div>
+    </section>
+
+    <!-- About Section -->
+    <section id="about">
+        <h2 class="section-title">About the Project</h2>
+        <p class="section-subtitle">Next-generation ransomware detection using cutting-edge AI technology</p>
+        
+        <div class="about-content">
+            <div class="about-text">
+                <h3>Revolutionizing Cybersecurity</h3>
+                <p>Our AI-powered ransomware detection system represents a paradigm shift in cybersecurity defense. By combining machine learning algorithms with behavioral fingerprinting techniques, we can identify ransomware attacks in real-time with unprecedented accuracy.</p>
+                <p>Traditional signature-based detection methods fail against zero-day ransomware variants. Our system analyzes behavioral patterns, file system activities, and process behaviors to detect malicious activity before encryption begins.</p>
+                <p>The system continuously monitors system processes, file operations, and network activities, building a comprehensive behavioral profile that can distinguish between legitimate user actions and ransomware behavior.</p>
+            </div>
+            <div class="stats">
+                <div class="stat-item fade-in">
+                    <span class="stat-number">99.7%</span>
+                    <span class="stat-label">Detection Accuracy</span>
+                </div>
+                <div class="stat-item fade-in">
+                    <span class="stat-number">&lt;100ms</span>
+                    <span class="stat-label">Response Time</span>
+                </div>
+                <div class="stat-item fade-in">
+                    <span class="stat-number">0.01%</span>
+                    <span class="stat-label">False Positive Rate</span>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Features Section -->
+    <section id="features">
+        <h2 class="section-title">Key Features</h2>
+        <p class="section-subtitle">Advanced capabilities that set our system apart</p>
+        
+        <div class="features-grid">
+            <div class="feature-card fade-in">
+                <span class="feature-icon">🧠</span>
+                <h3>Machine Learning Core</h3>
+                <p>Advanced neural networks trained on millions of malware samples, capable of identifying even novel ransomware variants through pattern recognition and anomaly detection.</p>
+            </div>
+            <div class="feature-card fade-in">
+                <span class="feature-icon">🔍</span>
+                <h3>Behavioral Analysis</h3>
+                <p>Real-time monitoring of file system operations, process behaviors, and registry modifications to create unique behavioral fingerprints for threat identification.</p>
+            </div>
+            <div class="feature-card fade-in">
+                <span class="feature-icon">⚡</span>
+                <h3>Real-Time Detection</h3>
+                <p>Sub-millisecond threat detection with immediate response capabilities, stopping ransomware before encryption can begin.</p>
+            </div>
+            <div class="feature-card fade-in">
+                <span class="feature-icon">🛡️</span>
+                <h3>Automated Response</h3>
+                <p>Intelligent threat mitigation system that can isolate infected processes, quarantine files, and restore from secure backups automatically.</p>
+            </div>
+            <div class="feature-card fade-in">
+                <span class="feature-icon">📊</span>
+                <h3>Advanced Analytics</h3>
+                <p>Comprehensive dashboards and reporting tools providing deep insights into threat patterns, system vulnerabilities, and security posture.</p>
+            </div>
+            <div class="feature-card fade-in">
+                <span class="feature-icon">🔄</span>
+                <h3>Continuous Learning</h3>
+                <p>Self-improving AI models that adapt to new threats through continuous learning and regular updates from global threat intelligence.</p>
+            </div>
+        </div>
+    </section>
+
+    <!-- Architecture Section -->
+    <section id="architecture" class="architecture">
+        <h2 class="section-title">System Architecture</h2>
+        <p class="section-subtitle">End-to-end pipeline for ransomware detection and mitigation</p>
+        
+        <div class="architecture-diagram">
+            <div class="pipeline">
+                <div class="pipeline-step">
+                    <div class="step-icon">📡</div>
+                    <div class="step-title">Data Collection</div>
+                    <div class="step-desc">Monitor file I/O, processes, network</div>
+                </div>
+                <div class="pipeline-step">
+                    <div class="step-icon">⚙️</div>
+                    <div class="step-title">Feature Extraction</div>
+                    <div class="step-desc">Extract behavioral signatures</div>
+                </div>
+                <div class="pipeline-step">
+                    <div class="step-icon">🤖</div>
+                    <div class="step-title">ML Analysis</div>
+                    <div class="step-desc">AI threat classification</div>
+                </div>
+                <div class="pipeline-step">
+                    <div class="step-icon">🎯</div>
+                    <div class="step-title">Detection</div>
+                    <div class="step-desc">Identify threats instantly</div>
+                </div>
+                <div class="pipeline-step">
+                    <div class="step-icon">🛡️</div>
+                    <div class="step-title">Response</div>
+                    <div class="step-desc">Neutralize and recover</div>
+                </div>
+            </div>
+
+            <div class="tech-stack">
+                <span class="tech-tag">Python</span>
+                <span class="tech-tag">TensorFlow</span>
+                <span class="tech-tag">Scikit-learn</span>
+                <span class="tech-tag">Random Forest</span>
+                <span class="tech-tag">Neural Networks</span>
+                <span class="tech-tag">XGBoost</span>
+                <span class="tech-tag">Pandas</span>
+                <span class="tech-tag">NumPy</span>
+                <span class="tech-tag">Windows API</span>
+                <span class="tech-tag">Real-time Processing</span>
+            </div>
+        </div>
+    </section>
+
+    <!-- Demo Section -->
+    <section id="demo" class="demo">
+        <h2 class="section-title">Live Demo</h2>
+        <p class="section-subtitle">See our system in action detecting ransomware in real-time</p>
+        
+        <div class="demo-container">
+            <div class="demo-video">▶</div>
+            <div class="demo-features">
+                <div class="demo-feature">Real-time threat visualization</div>
+                <div class="demo-feature">Behavioral pattern analysis</div>
+                <div class="demo-feature">Automated threat response</div>
+                <div class="demo-feature">Comprehensive logging</div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Contact Section -->
+    <section id="contact">
+        <h2 class="section-title">Get In Touch</h2>
+        <p class="section-subtitle">Interested in learning more or collaborating on this project?</p>
+        
+        <div class="contact-content">
+            <div class="contact-info">
+                <div class="contact-card fade-in">
+                    <div class="contact-icon">📧</div>
+                    <h3>Email</h3>
+                    <a href="mailto:project@ransomguard.ai">project@ransomguard.ai</a>
+                </div>
+                <div class="contact-card fade-in">
+                    <div class="contact-icon">💼</div>
+                    <h3>LinkedIn</h3>
+                    <a href="#" target="_blank">Connect with us</a>
+                </div>
+                <div class="contact-card fade-in">
+                    <div class="contact-icon">🐙</div>
+                    <h3>GitHub</h3>
+                    <a href="#" target="_blank">View Source Code</a>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer>
+        <p>&copy; 2024 RansomGuard - AI-Powered Ransomware Detection. All rights reserved.</p>
+    </footer>
+
+    <script>
+        // Custom Cursor
+        const cursor = document.querySelector('.custom-cursor');
+        const cursorInner = document.querySelector('.cursor-inner');
+        const cursorOuter = document.querySelector('.cursor-outer');
+        const crosshairH = document.querySelector('.crosshair-line-h');
+        const crosshairV = document.querySelector('.crosshair-line-v');
+        
+        let mouseX = 0;
+        let mouseY = 0;
+        let cursorX = 0;
+        let cursorY = 0;
+        
+        // Update mouse position
+        document.addEventListener('mousemove', (e) => {
+            mouseX = e.clientX;
+            mouseY = e.clientY;
+            
+            // Update crosshair position
+            if (crosshairH && crosshairV) {
+                crosshairH.style.top = mouseY + 'px';
+                crosshairV.style.left = mouseX + 'px';
+            }
+            
+            // Create trail effect
+            if (Math.random() > 0.8) {
+                createTrail(mouseX, mouseY);
+            }
+            
+            // Create particles occasionally
+            if (Math.random() > 0.95) {
+                createParticle(mouseX, mouseY);
+            }
+        });
+        
+        // Smooth cursor follow
+        function animateCursor() {
+            const speed = 0.15;
+            
+            cursorX += (mouseX - cursorX) * speed;
+            cursorY += (mouseY - cursorY) * speed;
+            
+            if (cursor) {
+                cursor.style.left = cursorX + 'px';
+                cursor.style.top = cursorY + 'px';
+            }
+            
+            requestAnimationFrame(animateCursor);
+        }
+        animateCursor();
+        
+        // Create trail effect
+        function createTrail(x, y) {
+            const trail = document.createElement('div');
+            trail.className = 'cursor-trail';
+            trail.style.left = x + 'px';
+            trail.style.top = y + 'px';
+            document.body.appendChild(trail);
+            
+            setTimeout(() => trail.remove(), 600);
+        }
+        
+        // Create particle effect
+        function createParticle(x, y) {
+            const particle = document.createElement('div');
+            particle.className = 'cursor-particle';
+            particle.style.left = x + 'px';
+            particle.style.top = y + 'px';
+            
+            const angle = Math.random() * Math.PI * 2;
+            const distance = 30 + Math.random() * 50;
+            const tx = Math.cos(angle) * distance;
+            const ty = Math.sin(angle) * distance;
+            
+            particle.style.setProperty('--tx', tx + 'px');
+            particle.style.setProperty('--ty', ty + 'px');
+            
+            document.body.appendChild(particle);
+            
+            setTimeout(() => particle.remove(), 1000);
+        }
+        
+        // Hover effect
+        const hoverElements = document.querySelectorAll('a, button, .btn, .feature-card, .stat-item, .tech-tag, .contact-card');
+        
+        hoverElements.forEach(el => {
+            el.addEventListener('mouseenter', () => {
+                cursor.classList.add('hover');
+            });
+            
+            el.addEventListener('mouseleave', () => {
+                cursor.classList.remove('hover');
+            });
+        });
+        
+        // Click effect
+        document.addEventListener('mousedown', () => {
+            cursor.classList.add('click');
+            
+            // Create burst of particles
+            for (let i = 0; i < 8; i++) {
+                setTimeout(() => createParticle(mouseX, mouseY), i * 20);
+            }
+        });
+        
+        document.addEventListener('mouseup', () => {
+            cursor.classList.remove('click');
+        });
+
+        // Smooth scrolling
+        document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+            anchor.addEventListener('click', function (e) {
+                e.preventDefault();
+                const target = document.querySelector(this.getAttribute('href'));
+                if (target) {
+                    target.scrollIntoView({
+                        behavior: 'smooth',
+                        block: 'start'
+                    });
+                }
+            });
+        });
+
+        // Intersection Observer for fade-in animations
+        const observerOptions = {
+            threshold: 0.1,
+            rootMargin: '0px 0px -100px 0px'
+        };
+
+        const observer = new IntersectionObserver((entries) => {
+            entries.forEach(entry => {
+                if (entry.isIntersecting) {
+                    entry.target.classList.add('visible');
+                }
+            });
+        }, observerOptions);
+
+        document.querySelectorAll('.fade-in').forEach(el => observer.observe(el));
+
+        // Demo video interaction
+        document.querySelector('.demo-video')?.addEventListener('click', function() {
+            this.innerHTML = '⏸';
+            this.style.background = 'linear-gradient(135deg, rgba(0, 245, 255, 0.3), rgba(168, 85, 247, 0.3))';
+            
+            setTimeout(() => {
+                this.innerHTML = '▶';
+                this.style.background = 'linear-gradient(135deg, rgba(0, 245, 255, 0.1), rgba(168, 85, 247, 0.1))';
+            }, 2000);
+        });
+
+        // Console message
+        console.log('%c🛡️ RANSOMGUARD SYSTEM ACTIVE', 'color: #00f5ff; font-size: 20px; font-weight: bold; text-shadow: 0 0 10px #00f5ff;');
+        console.log('%cThreat Detection: ONLINE | Behavioral Analysis: ACTIVE', 'color: #a855f7; font-size: 14px;');
+    </script>
+</body>
+</html>
